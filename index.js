@@ -15,7 +15,7 @@ const fs = require("fs");
  */
 async function uploadAsset(github, name) {
 	const url = core.getInput("upload_url", { required: true });
-	const assetPath = core.getInput("asset_path", { required: true });
+	const assetPath = name;
 	const contentType = core.getInput("asset_content_type", { required: true });
 
 	const contentLength = filePath => fs.statSync(filePath).size;
