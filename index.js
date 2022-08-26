@@ -36,7 +36,7 @@ async function run() {
 	try {
 		const maxReleases = parseInt(core.getInput("max_releases", { required: false }));
 		const releaseId = core.getInput("release_id", { required: true });
-		let name = core.getInput("asset_name", { required: true });
+		let name = core.getInput("asset_path", { required: true });
 		const placeholderStart = name.indexOf("$$");
 		const nameStart = name.substr(0, placeholderStart);
 		const nameEnd = name.substr(placeholderStart + 2);
@@ -58,6 +58,8 @@ async function run() {
 		assets.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
 		fs.readdirSync(name).forEach(async file => {name = file;
+
+			core.info("Checking "+file);
 			let existingAssetNameId = undefined;
 			for (let i = 0; i < assets.data.length; i++) {
 				const asset = assets.data[i];
@@ -78,10 +80,7 @@ async function run() {
 			let url = await uploadAsset(github, name);  
 		});
 		
-
 		core.setOutput("uploaded", "yes");
-		core.setOutput("url", url);
-		core.setOutput("asset_name", name);
 	} catch (error) {
 		core.setFailed(error.message);
 	}
