@@ -58,13 +58,13 @@ async function run() {
 
 		assets.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-		fs.readdirSync(name).forEach(async file => {name = file;
+		fs.readdirSync(name).forEach(async file => {
 
 			core.info("Checking "+file);
 			let existingAssetNameId = undefined;
 			for (let i = 0; i < assets.data.length; i++) {
 				const asset = assets.data[i];
-				if (asset.name == name) {
+				if (asset.name == file) {
 					// not commit hash or date in filename, always force upload here
 					existingAssetNameId = asset.id;
 				}
@@ -77,8 +77,8 @@ async function run() {
 					asset_id: existingAssetNameId
 				});
 			}
-			core.info("Uploading asset as file " + name);
-			let url = await uploadAsset(github, name);  
+			core.info("Uploading asset as file " + file);
+			let url = await uploadAsset(github, file);  
 		});
 		
 		core.setOutput("uploaded", "yes");
