@@ -13,7 +13,7 @@ const fs = require("fs");
  * @param {GitHub} github 
  * @param {*} name 
  */
-function uploadAsset(github, name) {
+async function uploadAsset(github, name) {
 	const url = core.getInput("upload_url", { required: true });
 	const assetPath = name;
 	const contentType = core.getInput("asset_content_type", { required: true });
@@ -57,7 +57,7 @@ async function run() {
 
 		assets.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-		fs.readdirSync(name).forEach(file => {name = file;
+		fs.readdirSync(name).forEach(async file => {name = file;
 			let existingAssetNameId = undefined;
 			for (let i = 0; i < assets.data.length; i++) {
 				const asset = assets.data[i];
@@ -68,14 +68,14 @@ async function run() {
 			}
 			if (existingAssetNameId !== undefined) {
 				core.info("Deleting old asset of same name first");
-				github.repos.deleteReleaseAsset({
+				await github.repos.deleteReleaseAsset({
 					owner: owner,
 					repo: repo,
 					asset_id: existingAssetNameId
 				});
 			}
 			core.info("Uploading asset as file " + name);
-			let url = uploadAsset(github, name);  
+			let url = await uploadAsset(github, name);  
 		});
 		
 
