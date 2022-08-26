@@ -13,7 +13,7 @@ const fs = require("fs");
  * @param {GitHub} github 
  * @param {*} name 
  */
-async function uploadAsset(github, name) {
+function uploadAsset(github, name) {
 	const url = core.getInput("upload_url", { required: true });
 	const assetPath = name;
 	const contentType = core.getInput("asset_content_type", { required: true });
@@ -68,14 +68,14 @@ async function run() {
 			}
 			if (existingAssetNameId !== undefined) {
 				core.info("Deleting old asset of same name first");
-				await github.repos.deleteReleaseAsset({
+				github.repos.deleteReleaseAsset({
 					owner: owner,
 					repo: repo,
 					asset_id: existingAssetNameId
 				});
 			}
 			core.info("Uploading asset as file " + name);
-			let url = await uploadAsset(github, name);  
+			let url = uploadAsset(github, name);  
 		});
 		
 
