@@ -57,37 +57,18 @@ async function run() {
 
 		assets.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-		let toDelete = [];
-		let existingAssetNameId = undefined;
-
-		let numFound = 0;
-		for (let i = 0; i < assets.data.length; i++) {
-			const asset = assets.data[i];
-			if (asset.name == name) {
-				// not commit hash or date in filename, always force upload here
-				existingAssetNameId = asset.id;
-			} else if (asset.name.startsWith(nameStart) && asset.name.endsWith(nameEnd)) {
-				if (asset.name.endsWith("-" + hash + nameEnd)) {
-					core.info("Current commit already released, exiting");
-					core.setOutput("uploaded", "no");
-					return;
-				} else {
-					numFound++;
-					if (numFound >= maxReleases) {
-						core.info("Queuing old asset " + asset.name + " for deletion");
-						toDelete.push(asset.id);
-					}
-				}
-			}
-		}
-
-		let now = new Date();
-		let date = now.getUTCFullYear().toString() + pad2((now.getUTCMonth() + 1).toString()) + pad2(now.getUTCDate().toString());
-
 		
 		fs.readdir(name, (err, files) => {
 		  files.forEach(file => {
-			name = name.replace("$$", date + "-" + hash);
+			name = file;
+			let existingAssetNameId = undefined;
+			for (let i = 0; i < assets.data.length; i++) {
+				const asset = assets.data[i];
+				if (asset.name == name) {
+					// not commit hash or date in filename, always force upload here
+					existingAssetNameId = asset.id;
+				}
+			}
 			if (existingAssetNameId !== undefined) {
 				core.info("Deleting old asset of same name first");
 				await github.repos.deleteReleaseAsset({
@@ -96,23 +77,11 @@ async function run() {
 					asset_id: existingAssetNameId
 				});
 			}
-
 			core.info("Uploading asset as file " + name);
 			let url = await uploadAsset(github, name);  
 		  });
 		});
 		
-		
-
-		core.info("Deleting " + toDelete.length + " old assets");
-		for (let i = 0; i < toDelete.length; i++) {
-			const id = toDelete[i];
-			await github.repos.deleteReleaseAsset({
-				owner: owner,
-				repo: repo,
-				asset_id: id
-			});
-		}
 
 		core.setOutput("uploaded", "yes");
 		core.setOutput("url", url);
