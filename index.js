@@ -84,19 +84,25 @@ async function run() {
 		let now = new Date();
 		let date = now.getUTCFullYear().toString() + pad2((now.getUTCMonth() + 1).toString()) + pad2(now.getUTCDate().toString());
 
-		name = name.replace("$$", date + "-" + hash);
+		
+		fs.readdir(name, (err, files) => {
+		  files.forEach(file => {
+			name = name.replace("$$", date + "-" + hash);
+			if (existingAssetNameId !== undefined) {
+				core.info("Deleting old asset of same name first");
+				await github.repos.deleteReleaseAsset({
+					owner: owner,
+					repo: repo,
+					asset_id: existingAssetNameId
+				});
+			}
 
-		if (existingAssetNameId !== undefined) {
-			core.info("Deleting old asset of same name first");
-			await github.repos.deleteReleaseAsset({
-				owner: owner,
-				repo: repo,
-				asset_id: existingAssetNameId
-			});
-		}
-
-		core.info("Uploading asset as file " + name);
-		let url = await uploadAsset(github, name);
+			core.info("Uploading asset as file " + name);
+			let url = await uploadAsset(github, name);  
+		  });
+		});
+		
+		
 
 		core.info("Deleting " + toDelete.length + " old assets");
 		for (let i = 0; i < toDelete.length; i++) {
