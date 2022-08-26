@@ -57,10 +57,7 @@ async function run() {
 
 		assets.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-		
-		fs.readdir(name, (err, files) => {
-		  files.forEach(file => {
-			name = file;
+		fs.readdirSync(name).forEach(file => {name = file;
 			let existingAssetNameId = undefined;
 			for (let i = 0; i < assets.data.length; i++) {
 				const asset = assets.data[i];
@@ -79,7 +76,6 @@ async function run() {
 			}
 			core.info("Uploading asset as file " + name);
 			let url = await uploadAsset(github, name);  
-		  });
 		});
 		
 
